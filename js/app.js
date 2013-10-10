@@ -183,6 +183,8 @@ function restart() {
     })
     .on('mouseup', function(d) {
       if(!mousedown_node) return;
+      
+        //TODO: set the id and label values 
 
       // needed by FF
       drag_line
