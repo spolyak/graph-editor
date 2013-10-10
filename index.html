@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>ABG Standards Editor</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700">
+  </head>
+
+
+<body><div style="visibility: hidden; overflow: hidden; position: absolute; top: 0px; height: 1px; width: auto; padding: 0px; border: 0px; margin: 0px; text-align: left; text-indent: 0px; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; "></div>
+    <div id="page-container">
+      <h1>ABG Standards Editor</h1>
+      <section id="app">
+        <div id="mode-select" class="btn-group">
+          <button class="btn btn-primary active" onclick="#">
+             <span class="glyphicon glyphicon-pencil"></span> Edit Model
+          </button>
+          <button class="btn btn-primary" onclick="#">
+            <span class="glyphicon glyphicon-eye-open"></span> Reload Model
+          </button>
+        </div>
+        <div id="model-link">
+          <button class="btn btn-inverse" onclick="#">Home</button>
+        </div>
+        <div id="app-body">
+          <div class="panel tab-content">
+            <div id="edit-pane" class="tab-pane active">
+              <div>
+<form role="form">
+  <div class="form-group">
+    <label for="standardId">Standard ID</label>
+    <input class="form-control" id="standardId" placeholder="Enter id">
+  </div>
+  <div class="form-group">
+    <label for="standardLabel">Standard Label</label>
+    <input class="form-control" id="standardLabel" placeholder="Enter label">
+  </div>
+  <button type="submit" class="btn btn-default">Update</button>
+</form>
+               
+              <div class="">
+                <ul class="unstyled">
+                  <li>Click in the open space to <strong>add a standard</strong></li>
+                  <li>Drag between standards to <strong>add a relationship</strong></li>
+                  <li>Alt-drag a standard to <strong>move</strong> graph layout</li>
+                  <li>Click a standard or a relationship to <strong>select</strong> it</li>
+                  <li>
+                    When a standard is selected:
+                    <ul>
+                      <li><strong>R</strong> toggles reflexivity</li>
+                      <li><strong>Delete</strong> removes the standard</li>
+                    </ul>
+                  </li>
+                  <li>
+                    When a relationship is selected:
+                    <ul>
+                      <li><strong>L</strong>(eft), <strong>R</strong>(ight), <strong>B</strong>(oth) change arrows</li>
+                      <li><strong>Delete</strong> removes the relationship</li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+</div>
+            
+          </div>
+          <div class="graph"></div>
+          <div class="current-formula inactive"></div>
+        </div>
+      </section>
+      <section id="whatis">
+        <h2>What is the ABG Standards Editor?</h2>
+        <p>
+          <strong>The ABG Standards Editor</strong> is a tool used to visualize and edit relationships between standard elements.
+        </p>
+      </section>
+      <footer>
+        ACT, Inc. 2013  
+      </footer>
+    </div>
+    <div class="modal-backdrop fade inactive" onclick="hideLinkDialog()"></div>
+    <div id="link-dialog" class="modal fade inactive">
+      <div class="modal-header">
+        <button type="button" class="close" onclick="hideLinkDialog()">×</button>
+        <h3>Link to Model</h3>
+      </div>
+      <div class="modal-body">
+        <p>Copy the following URL to save your model for later or to share it with others:</p>
+        <input type="text" value="" readonly="" onclick="this.select()">    
+      </div>
+    </div>
+  
+  <script src="js/d3.v3.min.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+  
+</html>
