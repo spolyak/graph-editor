@@ -5,8 +5,11 @@ var width  = 640,
 
 var svg = d3.select('.graph')
   .append('svg')
+  .attr('id', 'svgDoc')
   .attr('width', width)
   .attr('height', height);
+
+var formInput = false;
 
 // set up initial nodes and links
 //  - nodes are known by 'id', not by index in array.
@@ -59,6 +62,13 @@ svg.append('svg:defs').append('svg:marker')
     .attr('d', 'M10,-5L0,0L10,5')
     .attr('fill', '#000');
 
+var drag = force.drag()
+    .on("dragstart", dragstart);
+
+function dragstart(d) {
+  d.fixed = true;
+  d3.select(this).classed("fixed", true);
+}
 // line displayed when dragging new nodes
 var drag_line = svg.append('svg:path')
   .attr('class', 'link dragline hidden')
@@ -103,6 +113,7 @@ function tick() {
     return 'translate(' + d.x + ',' + d.y + ')';
   });
 }
+
 
 // update graph (called when needed)
 function restart() {
@@ -184,7 +195,8 @@ function restart() {
     .on('mouseup', function(d) {
       if(!mousedown_node) return;
       
-        //TODO: set the id and label values 
+      $('#standardId').val(mousedown_node.id);
+      $('#standardLabel').val(mousedown_node.label);
 
       // needed by FF
       drag_line
@@ -242,7 +254,7 @@ function restart() {
 	      .attr('x', 0)
 	      .attr('y', 20)
 	      .attr('class', 'id')
-	      .text(function(d) {  return d.label; });	  
+	      .text(function(d) {  this.id = 'clabel' + d.id; return ""; }).append('svg:tspan').text(function(d) { return d.label; });	  
 
   // remove old nodes
   circle.exit().remove();
@@ -252,6 +264,7 @@ function restart() {
 }
 
 function mousedown() {
+
   // prevent I-bar on drag
   //d3.event.preventDefault();
   
@@ -307,6 +320,10 @@ function spliceLinksForNode(node) {
 var lastKeyDown = -1;
 
 function keydown() {
+
+  if(formInput) {
+    return;
+  }
   d3.event.preventDefault();
 
   if(lastKeyDown !== -1) return;
@@ -374,6 +391,30 @@ function keyup() {
   }
 }
 
+//jquery setup
+$(document).ready(function() {
+
+$("#standardLabel").blur(function() {
+  formInput = false;
+});
+
+$( "#standardLabel" ).focus(function() {
+  formInput = true;
+});
+
+$( "#standardUpdate" ).click(function(event) {
+  event.preventDefault();  
+  var id = $("#standardId").val();
+  var node = nodes[id];
+  if(node) {
+    node.label = $("#standardLabel").val();
+    d3.select("#clabel" +id + " tspan").text(node.label);
+  }
+  restart();
+});
+
+});
+
 // app starts here
 svg.on('mousedown', mousedown)
   .on('mousemove', mousemove)
@@ -382,3 +423,4 @@ d3.select(window)
   .on('keydown', keydown)
   .on('keyup', keyup);
 restart();
+
