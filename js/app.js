@@ -481,7 +481,7 @@ svg.on('mousedown', mousedown)
   .on('mousemove', mousemove)
   .on('mouseup', mouseup);
 
-svg.call(zoom = d3.behavior.zoom().on('zoom', zoom)).on('dblclick.zoom', null);
+svg.call(zoom = d3.behavior.zoom().scaleExtent([-10, 10]).on('zoom', zoom)).on('dblclick.zoom', null);
 
 d3.select(window)
   .on('keydown', keydown)
