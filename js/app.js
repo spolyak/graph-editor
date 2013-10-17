@@ -9,6 +9,14 @@ var svg = d3.select('.graph')
   .attr('width', width)
   .attr('height', height);
 
+var svgContainer = svg.append("g");
+
+function zoom(){
+    if(panzoom) {
+      svgContainer.attr('transform', 'translate(' + zoom.translate() + ')' + ' scale(' +         zoom.scale() + ')');
+    }
+};
+
 var formInput = false;
 
 // set up initial nodes and links
@@ -40,7 +48,7 @@ var force = d3.layout.force()
     .on('tick', tick)
 
 // define arrow markers for graph links
-svg.append('svg:defs').append('svg:marker')
+svgContainer.append('svg:defs').append('svg:marker')
     .attr('id', 'end-arrow')
     .attr('viewBox', '0 -5 10 10')
     .attr('refX', 6)
@@ -51,7 +59,7 @@ svg.append('svg:defs').append('svg:marker')
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('fill', '#000');
 
-svg.append('svg:defs').append('svg:marker')
+svgContainer.append('svg:defs').append('svg:marker')
     .attr('id', 'start-arrow')
     .attr('viewBox', '0 -5 10 10')
     .attr('refX', 4)
@@ -66,17 +74,19 @@ var drag = force.drag()
     .on("dragstart", dragstart);
 
 function dragstart(d) {
+  //console.log(d);
   d.fixed = true;
   d3.select(this).classed("fixed", true);
 }
 // line displayed when dragging new nodes
-var drag_line = svg.append('svg:path')
+var drag_line = svgContainer.append('svg:path')
   .attr('class', 'link dragline hidden')
   .attr('d', 'M0,0L0,0');
 
 // handles to link and node element groups
-var path = svg.append('svg:g').selectAll('path'),
-    circle = svg.append('svg:g').selectAll('g');
+var path = svgContainer.append('svg:g').selectAll('path'),
+    circle = svgContainer.append('svg:g').selectAll('g');
+
 
 // mouse event vars
 var selected_node = null,
@@ -159,6 +169,7 @@ function restart() {
   // add new nodes
   var g = circle.enter().append('svg:g');
 
+    //.attr("transform", function(d) { return "translate(" + d + ")"; })
   g.append('svg:circle')
     .attr('class', 'node')
     .attr('r', 12)
@@ -168,12 +179,12 @@ function restart() {
     .on('mouseover', function(d) {
       if(!mousedown_node || d === mousedown_node) return;
       // enlarge target node
-      d3.select(this).attr('transform', 'scale(1.1)');
+      //d3.select(this).attr('transform', 'scale(1.1)');
     })
     .on('mouseout', function(d) {
       if(!mousedown_node || d === mousedown_node) return;
       // unenlarge target node
-      d3.select(this).attr('transform', '');
+      //d3.select(this).attr('transform', '');
     })
     .on('mousedown', function(d) {
       if(d3.event.altKey) return;
@@ -208,7 +219,7 @@ function restart() {
       if(mouseup_node === mousedown_node) { resetMouseVars(); return; }
 
       // unenlarge target node
-      d3.select(this).attr('transform', '');
+      //d3.select(this).attr('transform', '');
 
       // add link to graph (update if exists)
       // NB: links are strictly source < target; arrows separately specified by booleans
@@ -271,23 +282,28 @@ function mousedown() {
   // because :active only works in WebKit?
   svg.classed('active', true);
 
+  //TODO Steve 
+  //svgConatiner.call(d3.behavior.zoom().on("zoom"), null);
+
   if(d3.event.altKey || mousedown_node || mousedown_link) return;
 
   // insert new node at point
-  var point = d3.mouse(this),
+  if(d3.event.shiftKey) {
+    var point = d3.mouse(this),
       node = {id: ++lastNodeId, label: "new", reflexive: false};
-  node.x = point[0];
-  node.y = point[1];
-  nodes.push(node);
-
+      node.x = point[0];
+      node.y = point[1];
+    nodes.push(node);
+  }
   restart();
 }
 
 function mousemove() {
   if(!mousedown_node) return;
 
-  // update drag line
-  drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1]);
+     // update drag line
+  drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1] );
+
 
   restart();
 }
@@ -302,6 +318,9 @@ function mouseup() {
 
   // because :active only works in WebKit?
   svg.classed('active', false);
+
+  // enable zoom
+  //svgContainer.call(d3.behavior.zoom().on("zoom"), rescale);
 
   // clear mouse event vars
   resetMouseVars();
@@ -391,6 +410,8 @@ function keyup() {
   }
 }
 
+var panzoom = false;
+
 //jquery setup
 $(document).ready(function() {
 
@@ -413,12 +434,33 @@ $( "#standardUpdate" ).click(function(event) {
   restart();
 });
 
+$( "#add-node" ).click(function(event) {
+    // insert new node at point
+    var point = {x:1,y:1},
+      node = {id: ++lastNodeId, label: "new", reflexive: false};
+    node.x = point[0];
+    node.y = point[1];
+    nodes.push(node);
+    restart();
+});
+
+$( "#pan-zoom" ).click(function(event) {
+  if(panzoom) {
+    panzoom = false;
+  } else {
+    panzoom = true;
+  } 
+});
+
 });
 
 // app starts here
 svg.on('mousedown', mousedown)
   .on('mousemove', mousemove)
   .on('mouseup', mouseup);
+
+svg.call(zoom = d3.behavior.zoom().on('zoom', zoom)).on('dblclick.zoom', null);
+
 d3.select(window)
   .on('keydown', keydown)
   .on('keyup', keyup);

@@ -6,28 +6,26 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/app.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700">
-    <link rel="stylesheet" type="text/css" href="css/jquery.svg.css"> 
-    <script src="js/jquery-1.7.2.js"></script>
-    <script type="text/javascript" src="js/jquery.svg.js"></script>
-    <script type="text/javascript" src="js/jquery.svgdom.js"></script>
+    <script src="js/jquery-2.0.3.min.js"></script>
   </head>
 
 
 <body><div style="visibility: hidden; overflow: hidden; position: absolute; top: 0px; height: 1px; width: auto; padding: 0px; border: 0px; margin: 0px; text-align: left; text-indent: 0px; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; "></div>
-    <div id="page-container">
-      <h1>ABG Standards Editor</h1>
+<div id="page-container">
+<h1>ABG Standards Editor</h1>    
       <section id="app">
-        <div id="mode-select" class="btn-group">
-          <button class="btn btn-primary active" onclick="#">
-             <span class="glyphicon glyphicon-pencil"></span> Edit Model
-          </button>
-          <button class="btn btn-primary" onclick="#">
-            <span class="glyphicon glyphicon-eye-open"></span> Reload Model
-          </button>
-        </div>
-        <div id="model-link">
-          <button class="btn btn-inverse" onclick="#">Home</button>
-        </div>
+        <nav class="navbar navbar-default" role="navigation">
+<div class="navbar-header">
+ <a class="navbar-brand" href="#">0.0.1</a>
+</div>
+<div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav">
+      <li><a href="#" id="add-node">Add Node <span class="glyphicon glyphicon-plus-sign"></span></a></li>
+      <li><a href="#">Pan/Zoom <input id="pan-zoom" type="checkbox"></a></li>
+    </ul>
+</div>
+</nav>
+     
         <div id="app-body">
           <div class="panel tab-content">
             <div id="edit-pane" class="tab-pane active">
