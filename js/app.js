@@ -11,8 +11,13 @@ var svg = d3.select('.graph')
 
 var svgContainer = svg.append("g");
 
+var currentTranslate = null;
+var currentScale = null;
+
 function zoom(){
     if(panzoom) {
+      currentTranslate = zoom.translate();
+      currentScale = zoom.scale();
       svgContainer.attr('transform', 'translate(' + zoom.translate() + ')' + ' scale(' +         zoom.scale() + ')');
     }
 };
@@ -288,11 +293,24 @@ function mousedown() {
   if(d3.event.altKey || mousedown_node || mousedown_link) return;
 
   // insert new node at point
+  var newx = d3.mouse(this)[0];
+  var newy = d3.mouse(this)[1];
+
+  if(currentScale !== null) {
+    newx = (newx - currentTranslate[0]) / currentScale;
+    newy = (newy - currentTranslate[1]) / currentScale;
+  }
+
+  console.log("mx: " + d3.mouse(this)[0]);
+  console.log("my: " + d3.mouse(this)[1]);
+  console.log("nx: " + newx);
+  console.log("ny: " + newy);
+
   if(d3.event.shiftKey) {
     var point = d3.mouse(this),
-      node = {id: ++lastNodeId, label: "new", reflexive: false};
-      node.x = point[0];
-      node.y = point[1];
+      node = {id: ++lastNodeId, label: "new", reflexive: false, fixed: true};
+      node.x = newx;
+      node.y = newy;
     nodes.push(node);
   }
   restart();
@@ -301,9 +319,18 @@ function mousedown() {
 function mousemove() {
   if(!mousedown_node) return;
 
-     // update drag line
-  drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + d3.mouse(this)[0] + ',' + d3.mouse(this)[1] );
+  var newx = d3.mouse(this)[0];
+  var newy = d3.mouse(this)[1];
 
+  if(currentScale !== null) {
+    newx = (newx - currentTranslate[0]) / currentScale;
+    newy = (newy - currentTranslate[1]) / currentScale;
+  }
+
+  // update drag line
+  if(panzoom === false) {
+    drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + newx + ',' + newy );
+  }
 
   restart();
 }
@@ -320,7 +347,7 @@ function mouseup() {
   svg.classed('active', false);
 
   // enable zoom
-  //svgContainer.call(d3.behavior.zoom().on("zoom"), rescale);
+  //svgContainer.call(d3.behavior.zoom().on("zoom"), zoom);
 
   // clear mouse event vars
   resetMouseVars();
