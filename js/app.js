@@ -461,14 +461,9 @@ $( "#standardUpdate" ).click(function(event) {
   restart();
 });
 
-$( "#add-node" ).click(function(event) {
-    // insert new node at point
-    var point = {x:1,y:1},
-      node = {id: ++lastNodeId, label: "new", reflexive: false};
-    node.x = point[0];
-    node.y = point[1];
-    nodes.push(node);
-    restart();
+$( "#show-button" ).click(function(event) {
+  alert(JSON.stringify(nodes));
+  alert(JSON.stringify(links));
 });
 
 $( "#pan-zoom" ).click(function(event) {
