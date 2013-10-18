@@ -10,12 +10,16 @@ var svg = d3.select('.graph')
   .attr('height', height);
 
 var svgContainer = svg.append("g");
+var svgContainerChild = svgContainer.append ("g");
 
 var currentTranslate = null;
 var currentScale = null;
+var nodeDragging = false;
+var pathDrawing = false;
 
 function zoom(){
-    if(panzoom) {
+    if(nodeDragging === false && pathDrawing === false) {
+      //console.log('zoom');
       currentTranslate = zoom.translate();
       currentScale = zoom.scale();
       svgContainer.attr('transform', 'translate(' + zoom.translate() + ')' + ' scale(' +         zoom.scale() + ')');
@@ -53,7 +57,7 @@ var force = d3.layout.force()
     .on('tick', tick)
 
 // define arrow markers for graph links
-svgContainer.append('svg:defs').append('svg:marker')
+svgContainerChild.append('svg:defs').append('svg:marker')
     .attr('id', 'end-arrow')
     .attr('viewBox', '0 -5 10 10')
     .attr('refX', 6)
@@ -64,7 +68,7 @@ svgContainer.append('svg:defs').append('svg:marker')
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('fill', '#000');
 
-svgContainer.append('svg:defs').append('svg:marker')
+svgContainerChild.append('svg:defs').append('svg:marker')
     .attr('id', 'start-arrow')
     .attr('viewBox', '0 -5 10 10')
     .attr('refX', 4)
@@ -84,13 +88,13 @@ function dragstart(d) {
   d3.select(this).classed("fixed", true);
 }
 // line displayed when dragging new nodes
-var drag_line = svgContainer.append('svg:path')
+var drag_line = svgContainerChild.append('svg:path')
   .attr('class', 'link dragline hidden')
   .attr('d', 'M0,0L0,0');
 
 // handles to link and node element groups
-var path = svgContainer.append('svg:g').selectAll('path'),
-    circle = svgContainer.append('svg:g').selectAll('g');
+var path = svgContainerChild.append('svg:g').selectAll('path'),
+    circle = svgContainerChild.append('svg:g').selectAll('g');
 
 
 // mouse event vars
@@ -301,10 +305,10 @@ function mousedown() {
     newy = (newy - currentTranslate[1]) / currentScale;
   }
 
-  console.log("mx: " + d3.mouse(this)[0]);
-  console.log("my: " + d3.mouse(this)[1]);
-  console.log("nx: " + newx);
-  console.log("ny: " + newy);
+  //console.log("mx: " + d3.mouse(this)[0]);
+  //console.log("my: " + d3.mouse(this)[1]);
+  //console.log("nx: " + newx);
+  //console.log("ny: " + newy);
 
   if(d3.event.shiftKey) {
     var point = d3.mouse(this),
@@ -318,7 +322,7 @@ function mousedown() {
 
 function mousemove() {
   if(!mousedown_node) return;
-
+  nodeDragging = true;
   var newx = d3.mouse(this)[0];
   var newy = d3.mouse(this)[1];
 
@@ -328,9 +332,7 @@ function mousemove() {
   }
 
   // update drag line
-  if(panzoom === false) {
-    drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + newx + ',' + newy );
-  }
+  drag_line.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + newx + ',' + newy );
 
   restart();
 }
@@ -341,6 +343,7 @@ function mouseup() {
     drag_line
       .classed('hidden', true)
       .style('marker-end', '');
+    nodeDragging = false;
   }
 
   // because :active only works in WebKit?
@@ -377,6 +380,7 @@ function keydown() {
 
   // alt
   if(d3.event.keyCode === 18) {
+    nodeDragging = true;
     circle.call(force.drag);
     svg.classed('alt', true);
   }
@@ -430,14 +434,13 @@ function keyup() {
 
   // alt
   if(d3.event.keyCode === 18) {
+    nodeDragging = false;
     circle
       .on('mousedown.drag', null)
       .on('touchstart.drag', null);
     svg.classed('alt', false);
   }
 }
-
-var panzoom = false;
 
 //jquery setup
 $(document).ready(function() {
@@ -464,14 +467,6 @@ $( "#standardUpdate" ).click(function(event) {
 $( "#show-button" ).click(function(event) {
   alert(JSON.stringify(nodes));
   alert(JSON.stringify(links));
-});
-
-$( "#pan-zoom" ).click(function(event) {
-  if(panzoom) {
-    panzoom = false;
-  } else {
-    panzoom = true;
-  } 
 });
 
 });
