@@ -41,13 +41,25 @@ var formInput = false;
 //  - reflexive edges are indicated on the node (as a bold black circle).
 //  - links are always source < target; edge directions are set by 'left' and 'right'.
 var nodes = [
-    {id: 0, label: "CCSS Math", reflexive: false, fixed: true, x:100, y:100},
-    {id: 1, label: "Algebra", reflexive: false },
-    {id: 2, label: "PreAlgebra", reflexive: false},
-    {id: 3, label: "Geometry", reflexive: false },
-    {id: 4, label: "Counting and Cardinality", reflexive: false }
+    {id: 0, label: "Because the earth", reflexive: false, fixed: true, x:100, y:100},
+    {id: 1, label: "Transfer of thermal", reflexive: false },
+    {id: 2, label: "In a fluid", reflexive: false},
+    {id: 3, label: "Life is adapted", reflexive: false },
+    {id: 4, label: "Climatic conditions result", reflexive: false },
+    {id: 5, label: "temperature and winds", reflexive: false, textonly: true, fixed: true},
+    {id: 6, label: "water cycle", reflexive: false, textonly: true, fixed: true},
+    {id: 7, label: "atmosphere", reflexive: false, textonly: true, fixed: true},
+    {id: 8, label: "climate change", reflexive: false, textonly: true, fixed: true},
+    {id: 9, label: "9-12", reflexive: false, textonly: true, fixed: true},
+    {id: 10, label: "9-12", reflexive: false, textonly: true, fixed: true},
+    {id: 11, label: "6-8", reflexive: false, textonly: true, fixed: true},
+    {id: 12, label: "6-8", reflexive: false, textonly: true, fixed: true},
+    {id: 13, label: "3-5", reflexive: false, textonly: true, fixed: true},
+    {id: 14, label: "3-5", reflexive: false, textonly: true, fixed: true},
+    {id: 15, label: "K-2", reflexive: false, textonly: true, fixed: true},
+    {id: 16, label: "K-2", reflexive: false, textonly: true, fixed: true}
 ],
-lastNodeId = 4,
+lastNodeId = 16,
 links = [
     {source: nodes[0], target: nodes[1], left: false, right: true },
     {source: nodes[1], target: nodes[2], left: false, right: true },
@@ -175,7 +187,8 @@ function restart() {
 
     // update existing nodes (reflexive & selected visual states)
     circle.selectAll('circle')
-	.style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+	.style('fill', function(d) { if(d.textonly) return "#d3d3d3"; return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+	.classed('textonly', function(d) { return d.textonly; })
 	.classed('reflexive', function(d) { return d.reflexive; });
 
     // add new nodes
@@ -183,10 +196,11 @@ function restart() {
 
     g.append('svg:circle')
 	.attr('class', 'node')
-	.attr('r', 12)
-	.style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+	.attr('r', function(d) { return 12; })
+	.style('fill', function(d) { if(d.textonly) return "#d3d3d3"; return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
 	.style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
 	.classed('reflexive', function(d) { return d.reflexive; })
+	.classed('textonly', function(d) { return d.textonly; })
 	.on('mouseover', function(d) {
 	    if(!mousedown_node || d === mousedown_node) return;
 	})
@@ -261,7 +275,7 @@ function restart() {
 	.attr('x', 0)
 	.attr('y', 4)
 	.attr('class', 'id')
-	.text(function(d) { return d.id; });
+	.text(function(d) { if(d.textonly) return null; return d.id; });
     
     // show node labels
     //first a copy with thick white stroke for legibility
