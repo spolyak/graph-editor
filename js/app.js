@@ -1,7 +1,10 @@
-// set up SVG for D3
-var width  = 640,
-height = 540,
-colors = d3.scale.category10();
+// ACT ABG Editor app
+// Steve Polyak, November 2013
+// Based on several D3 examples, including Force graph editor and panzoom examples
+
+var colors = d3.scale.category20(),
+    width = 640,
+    height = 540;
 
 var svg = d3.select('.graph')
     .append('svg')
@@ -12,28 +15,23 @@ var svg = d3.select('.graph')
 var svgContainer = svg.append("g");
 var svgContainerChild = svgContainer.append ("g");
 
-var currentTranslate = null;
-var currentScale = null;
+var currentTranslate = [0,0];
+var currentScale = 1.0;
 var nodeDragging = false;
 var pathDrawing = false;
 
 function zoomFn(){
     if(nodeDragging === false && pathDrawing === false) {
-
 	var newx = d3.mouse(this)[0];
 	var newy = d3.mouse(this)[1];
-
 	if(currentScale !== null) {
 	    newx = (newx - currentTranslate[0]) / currentScale;
 	    newy = (newy - currentTranslate[1]) / currentScale;
 	}
-
 	currentTranslate = zoom.translate();
 	currentScale = zoom.scale();
 	svgContainer.attr('transform', 'translate(' + zoom.translate() + ')' + ' scale(' +         zoom.scale() + ')');
-
     }
-
 };
 
 var formInput = false;
@@ -43,7 +41,7 @@ var formInput = false;
 //  - reflexive edges are indicated on the node (as a bold black circle).
 //  - links are always source < target; edge directions are set by 'left' and 'right'.
 var nodes = [
-    {id: 0, label: "CCSS Math", reflexive: false},
+    {id: 0, label: "CCSS Math", reflexive: false, fixed: true, x:100, y:100},
     {id: 1, label: "Algebra", reflexive: false },
     {id: 2, label: "PreAlgebra", reflexive: false},
     {id: 3, label: "Geometry", reflexive: false },
@@ -93,7 +91,6 @@ var drag = force.drag()
     .on("dragstart", dragstart);
 
 function dragstart(d) {
-    //console.log(d);
     d.fixed = true;
     d3.select(this).classed("fixed", true);
 }
@@ -105,7 +102,6 @@ var drag_line = svgContainerChild.append('svg:path')
 // handles to link and node element groups
 var path = svgContainerChild.append('svg:g').selectAll('path'),
 circle = svgContainerChild.append('svg:g').selectAll('g');
-
 
 // mouse event vars
 var selected_node = null,
@@ -143,7 +139,6 @@ function tick() {
     });
 }
 
-
 // update graph (called when needed)
 function restart() {
     // path (link) group
@@ -153,7 +148,6 @@ function restart() {
     path.classed('selected', function(d) { return d === selected_link; })
 	.style('marker-start', function(d) { return d.left ? 'url(#start-arrow)' : ''; })
 	.style('marker-end', function(d) { return d.right ? 'url(#end-arrow)' : ''; });
-
 
     // add new links
     path.enter().append('svg:path')
@@ -175,7 +169,6 @@ function restart() {
     // remove old links
     path.exit().remove();
 
-
     // circle (node) group
     // NB: the function arg is crucial here! nodes are known by id, not by index!
     circle = circle.data(nodes, function(d) { return d.id; });
@@ -188,7 +181,6 @@ function restart() {
     // add new nodes
     var g = circle.enter().append('svg:g');
 
-    //.attr("transform", function(d) { return "translate(" + d + ")"; })
     g.append('svg:circle')
 	.attr('class', 'node')
 	.attr('r', 12)
@@ -197,13 +189,9 @@ function restart() {
 	.classed('reflexive', function(d) { return d.reflexive; })
 	.on('mouseover', function(d) {
 	    if(!mousedown_node || d === mousedown_node) return;
-	    // enlarge target node
-	    //d3.select(this).attr('transform', 'scale(1.1)');
 	})
 	.on('mouseout', function(d) {
 	    if(!mousedown_node || d === mousedown_node) return;
-	    // unenlarge target node
-	    //d3.select(this).attr('transform', '');
 	})
 	.on('mousedown', function(d) {
 	    if(d3.event.altKey) return;
@@ -219,7 +207,6 @@ function restart() {
 		.style('marker-end', 'url(#end-arrow)')
 		.classed('hidden', false)
 		.attr('d', 'M' + mousedown_node.x + ',' + mousedown_node.y + 'L' + mousedown_node.x + ',' + mousedown_node.y);
-
 	    restart();
 	})
 	.on('mouseup', function(d) {
@@ -236,9 +223,6 @@ function restart() {
 	    // check for drag-to-self
 	    mouseup_node = d;
 	    if(mouseup_node === mousedown_node) { resetMouseVars(); return; }
-
-	    // unenlarge target node
-	    //d3.select(this).attr('transform', '');
 
 	    // add link to graph (update if exists)
 	    // NB: links are strictly source < target; arrows separately specified by booleans
@@ -280,11 +264,19 @@ function restart() {
 	.text(function(d) { return d.id; });
     
     // show node labels
+    //first a copy with thick white stroke for legibility
+    g.append('svg:text')
+	.attr('x', 0)
+	.attr('y', 20)
+	.attr('class', 'id shadow')
+	.text(function(d) {  this.id = 'hclabel' + d.id; return ""; }).append('svg:tspan').text(function(d) { return d.label; }); 
+
     g.append('svg:text')
 	.attr('x', 0)
 	.attr('y', 20)
 	.attr('class', 'id')
-	.text(function(d) {  this.id = 'clabel' + d.id; return ""; }).append('svg:tspan').text(function(d) { return d.label; });	  
+	.text(function(d) {  this.id = 'clabel' + d.id; return ""; }).append('svg:tspan').text(function(d) { return d.label; }); 
+
 
     // remove old nodes
     circle.exit().remove();
@@ -294,35 +286,20 @@ function restart() {
 }
 
 function mousedown() {
-
-    // prevent I-bar on drag
-    //d3.event.preventDefault();
-    
     // because :active only works in WebKit?
     svg.classed('active', true);
 
-    //mytest 
-    //svgContainer.call(d3.behavior.zoom().on("zoom"), null);
-    //svg.call(zoom = d3.behavior.zoom().scaleExtent([-10, 10]).on('zoom', null)).on('dblclick.zoom', null);
-
     if(d3.event.altKey || mousedown_node || mousedown_link) {
-        //svg.call(zoom = d3.behavior.zoom().on("zoom", null));
 	return;
     }
 
     // insert new node at point
     var newx = d3.mouse(this)[0];
     var newy = d3.mouse(this)[1];
-
     if(currentScale !== null) {
 	newx = (newx - currentTranslate[0]) / currentScale;
 	newy = (newy - currentTranslate[1]) / currentScale;
     }
-
-    //console.log("mx: " + d3.mouse(this)[0]);
-    //console.log("my: " + d3.mouse(this)[1]);
-    //console.log("nx: " + newx);
-    //console.log("ny: " + newy);
 
     if(d3.event.shiftKey) {
 	var point = d3.mouse(this),
@@ -368,10 +345,6 @@ function mouseup() {
 
     // because :active only works in WebKit?
     svg.classed('active', false);
-
-    // mytest
-    //svgContainer.call(d3.behavior.zoom().on("zoom"), zoom);
-
 
     // clear mouse event vars
     resetMouseVars();
@@ -480,6 +453,7 @@ $(document).ready(function() {
 	var node = nodes[id];
 	if(node) {
 	    node.label = $("#standardLabel").val();
+	    d3.select("#hclabel" +id + " tspan").text(node.label);
 	    d3.select("#clabel" +id + " tspan").text(node.label);
 	}
 	restart();
