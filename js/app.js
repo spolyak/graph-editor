@@ -40,32 +40,14 @@ var formInput = false;
 //  - nodes are known by 'id', not by index in array.
 //  - reflexive edges are indicated on the node (as a bold black circle).
 //  - links are always source < target; edge directions are set by 'left' and 'right'.
+
+//    {id: 0, label: "sample", reflexive: false, fixed: true, x:100, y:100, info: ""}
+//    {source: nodes[0], target: nodes[1], left: false, right: true },
 var nodes = [
-    {id: 0, label: "Because the earth", reflexive: false, fixed: true, x:100, y:100},
-    {id: 1, label: "Transfer of thermal", reflexive: false },
-    {id: 2, label: "In a fluid", reflexive: false},
-    {id: 3, label: "Life is adapted", reflexive: false },
-    {id: 4, label: "Climatic conditions result", reflexive: false },
-    {id: 5, label: "temperature and winds", reflexive: false, textonly: true, fixed: true},
-    {id: 6, label: "water cycle", reflexive: false, textonly: true, fixed: true},
-    {id: 7, label: "atmosphere", reflexive: false, textonly: true, fixed: true},
-    {id: 8, label: "climate change", reflexive: false, textonly: true, fixed: true},
-    {id: 9, label: "9-12", reflexive: false, textonly: true, fixed: true},
-    {id: 10, label: "9-12", reflexive: false, textonly: true, fixed: true},
-    {id: 11, label: "6-8", reflexive: false, textonly: true, fixed: true},
-    {id: 12, label: "6-8", reflexive: false, textonly: true, fixed: true},
-    {id: 13, label: "3-5", reflexive: false, textonly: true, fixed: true},
-    {id: 14, label: "3-5", reflexive: false, textonly: true, fixed: true},
-    {id: 15, label: "K-2", reflexive: false, textonly: true, fixed: true},
-    {id: 16, label: "K-2", reflexive: false, textonly: true, fixed: true}
+    {id: 0, label: "new", reflexive: false, fixed: true, x:100, y:100, info: "new"}
 ],
-lastNodeId = 16,
-links = [
-    {source: nodes[0], target: nodes[1], left: false, right: true },
-    {source: nodes[1], target: nodes[2], left: false, right: true },
-    {source: nodes[0], target: nodes[3], left: false, right: true },
-    {source: nodes[0], target: nodes[4], left: false, right: true }
-];
+lastNodeId = 0,
+links = [];
 
 // init D3 force layout
 var force = d3.layout.force()
@@ -187,7 +169,7 @@ function restart() {
 
     // update existing nodes (reflexive & selected visual states)
     circle.selectAll('circle')
-	.style('fill', function(d) { if(d.textonly) return "#d3d3d3"; return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+	.style('fill', function(d) { if(d.textonly) return "#d3d3d3"; return (d === selected_node) ? d3.rgb(colors(0)).brighter().toString() : colors(0); })
 	.classed('textonly', function(d) { return d.textonly; })
 	.classed('reflexive', function(d) { return d.reflexive; });
 
@@ -197,8 +179,8 @@ function restart() {
     g.append('svg:circle')
 	.attr('class', 'node')
 	.attr('r', function(d) { return 12; })
-	.style('fill', function(d) { if(d.textonly) return "#d3d3d3"; return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
-	.style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
+	.style('fill', function(d) { if(d.textonly) return "#d3d3d3"; return (d === selected_node) ? d3.rgb(colors(0)).brighter().toString() : colors(0); })
+	.style('stroke', function(d) { return d3.rgb(colors(0)).darker().toString(); })
 	.classed('reflexive', function(d) { return d.reflexive; })
 	.classed('textonly', function(d) { return d.textonly; })
 	.on('mouseover', function(d) {
@@ -228,6 +210,7 @@ function restart() {
 	    
 	    $('#standardId').val(mousedown_node.id);
 	    $('#standardLabel').val(mousedown_node.label);
+	    $('#standardDescription').val(mousedown_node.info);
 
 	    // needed by FF
 	    drag_line
@@ -291,6 +274,25 @@ function restart() {
 	.attr('class', 'id')
 	.text(function(d) {  this.id = 'clabel' + d.id; return ""; }).append('svg:tspan').text(function(d) { return d.label; }); 
 
+    g.append("svg:rect")
+	.attr('x', -75)
+	.attr('y', 25)
+	.attr('rx', 25)
+	.attr('ry', 25)
+        .attr("width", function(d) { if(d.textonly) return 0; return 150;})
+        .attr("height", function(d) { if(d.textonly) return 0; return 100; })
+        .attr("style", "fill:lightgray;stroke:black;stroke-width:5;opacity:0.5");
+
+    var fo = g.append("svg:foreignObject")
+	.attr('x', -60)
+	.attr('y', 30)
+        .attr("width", function(d) { if(d.textonly) return 0; return 120;})
+        .attr("height", function(d) { if(d.textonly) return 0; return 100;})
+    fo.append("xhtml:body")
+      .attr("style","background:lightgray")
+      .attr("id", function(d) {return 'cdescription' + d.id; })
+      .html(function(d) {return d.info})
+      .style("font", "10px Arial");
 
     // remove old nodes
     circle.exit().remove();
@@ -317,7 +319,7 @@ function mousedown() {
 
     if(d3.event.shiftKey) {
 	var point = d3.mouse(this),
-	node = {id: ++lastNodeId, label: "new", reflexive: false, fixed: true};
+	node = {id: ++lastNodeId, label: "new", reflexive: false, fixed: true, info: "new"};
 	node.x = newx;
 	node.y = newy;
 	nodes.push(node);
@@ -379,7 +381,7 @@ var lastKeyDown = -1;
 function keydown() {
 
     if(formInput) {
-	return;
+  	return;
     }
     d3.event.preventDefault();
 
@@ -461,14 +463,24 @@ $(document).ready(function() {
 	formInput = true;
     });
 
+    $("#standardDescription").blur(function() {
+	formInput = false;
+    });
+
+    $( "#standardDescription" ).focus(function() {
+	formInput = true;
+    });
+
     $( "#standardUpdate" ).click(function(event) {
 	event.preventDefault();  
 	var id = $("#standardId").val();
 	var node = nodes[id];
 	if(node) {
 	    node.label = $("#standardLabel").val();
+	    node.info = $("#standardDescription").val();
 	    d3.select("#hclabel" +id + " tspan").text(node.label);
 	    d3.select("#clabel" +id + " tspan").text(node.label);
+	    d3.select("#cdescription" +id).html(node.info);
 	}
 	restart();
     });
